@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Check-in App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        #search {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+        .attendee {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+        .check-in-btn {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .checked-in {
+            background-color: #4CAF50;
+            color: white;
+        }
+        #download-csv {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+        .pmi-id {
+            width: 100px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Event Check-in</h1>
+    <input type="text" id="search" placeholder="Search attendees...">
+    <div id="attendee-list"></div>
+    <button id="download-csv">Download CSV</button>
+
+    <script>
+        const attendees = [
+            {name: "Kalyan Sathyavada", email: "ksathyavada@yahoo.com"},
+            {name: "KONDURI LAXMAN SHASHIDHAR", email: "shashidhar_lk@yahoo.co.in"},
+            {name: "Sourajit Basu", email: "sourajitbasu@neulandlabs.com"},
+            {name: "Suneel Yadavalli", email: "yadavalli_suneel@yahoo.com"},
+            {name: "Prashanth Kumar Deshpande", email: "deshpandepk@gmail.com"},
+            {name: "Shaik Nazia", email: "Nazia.shaik89@gmail.com"},
+            {name: "Gajender Bachula", email: "bsgajender@gmail.com"},
+            {name: "Tavish Singh Chadha", email: "tavish.chadha@gmail.com"},
+            {name: "SivaRamaKrishna Yanamandra", email: "ysrkrishna@hotmail.com"},
+            {name: "Kara Harshal", email: "karaharshal@gmail.com"},
+            {name: "ILANGATHIR S PADMANATHAN", email: "ilangathirsp@gmail.com"},
+            {name: "Anuradha Chanda", email: "anuradhachanda@gmail.com"},
+            {name: "Prateek Bhandari", email: "prateek25.bhandari@gmail.com"},
+            {name: "TATA SURESH KUMAR", email: "tata.suresh@gmail.com"},
+            {name: "Koshy P. Thomas", email: "koshyt2012@gmail.com"},
+            {name: "D S Chouhan", email: "dhansingh.chouhan@cyient.com"},
+            {name: "Sandeep Raukutam", email: "sandeep.raukutam@gmail.com"},
+            {name: "Krishna Vijayashekaran", email: "kv0875@gmail.com"},
+            {name: "Nikita Patel", email: "nikita.patel1803@gmail.com"},
+            {name: "Aiswarya Surapaneni", email: "Aishu.opal@gmail.com"},
+            {name: "PREMA MOHANTY", email: "premamohanty64@gmail.com"},
+            {name: "Joby Thampy", email: "jobythampy@gmail.com"},
+            {name: "LAXMI SUSHUMA V", email: "omsaivls@gmail.com"},
+            {name: "Sailaja Adda", email: "sailaja.adda@gmail.com"},
+            {name: "seema bhandarkar", email: "seema.bhandarkar101@biocon.com"}
+        ];
+
+        attendees.sort((a, b) => a.name.localeCompare(b.name));
+
+        const attendeeList = document.getElementById('attendee-list');
+        const searchInput = document.getElementById('search');
+        const downloadBtn = document.getElementById('download-csv');
+
+        function renderAttendees(filteredAttendees = attendees) {
+            attendeeList.innerHTML = '';
+            filteredAttendees.forEach(attendee => {
+                const div = document.createElement('div');
+                div.className = 'attendee';
+                div.innerHTML = `
+                    <span>${attendee.name}</span>
+                    <div>
+                        <input type="text" class="pmi-id" placeholder="PMI ID">
+                        <button class="check-in-btn" onclick="toggleCheckIn(this)">Check In</button>
+                    </div>
+                `;
+                attendeeList.appendChild(div);
+            });
+        }
+
+        function toggleCheckIn(btn) {
+            btn.classList.toggle('checked-in');
+            btn.textContent = btn.classList.contains('checked-in') ? 'Undo' : 'Check In';
+        }
+
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const filteredAttendees = attendees.filter(attendee => 
+                attendee.name.toLowerCase().includes(searchTerm)
+            );
+            renderAttendees(filteredAttendees);
+        });
+
+        downloadBtn.addEventListener('click', () => {
+            const checkedInAttendees = Array.from(document.querySelectorAll('.attendee')).filter(
+                attendee => attendee.querySelector('.check-in-btn').classList.contains('checked-in')
+            );
+
+            const csvContent = checkedInAttendees.map(attendee => {
+                const name = attendee.querySelector('span').textContent;
+                const email = attendees.find(a => a.name === name).email;
+                const pmiId = attendee.querySelector('.pmi-id').value;
+                return `${name},${email},${pmiId}`;
+            }).join('\n');
+
+            const blob = new Blob([`Name,Email,PMI ID\n${csvContent}`], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', 'checked_in_attendees.csv');
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        });
+
+        renderAttendees();
+    </script>
+</body>
+</html>
